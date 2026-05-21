@@ -48,6 +48,18 @@ export default async function ResultPage({
     );
   }
 
+  if (!result.published) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+        <p className="text-sm uppercase tracking-[0.24em] text-slate-500">Result status</p>
+        <h1 className="mt-4 text-2xl font-semibold text-slate-900">Result not published yet</h1>
+        <p className="mt-3 text-sm text-slate-600">
+          The administrator has not uploaded this competition result yet.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-2">
