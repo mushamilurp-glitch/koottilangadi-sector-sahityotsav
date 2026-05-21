@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Photo {
+  id           Int      @id @default(autoincrement())
+  url          String
+  publicId     String
+  title        String?
+  published    Boolean  @default(false)
+  uploadedById Int?
+  createdAt    DateTime @default(now())
+
+  user User? @relation(fields: [uploadedById], references: [id])
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String
+  role         String   @default("media")
+  createdAt    DateTime @default(now())
+
+  photos Photo[]
+}
+
+model Category {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  competitions Competition[]
+  results      Result[]
+}
+
+model Competition {
+  id Int @id @default(autoincrement())
+
+  name String
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  results Result[]
+}
+
+model Team {
+  id Int @id @default(autoincrement())
+
+  name String @unique
+
+  winners Winner[]
+}
+
+model Result {
+  id Int @id @default(autoincrement())
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  competitionId Int
+  competition   Competition @relation(fields: [competitionId], references: [id])
+
+  published Boolean @default(true)
+
+  posterUrl String?
+
+  createdAt DateTime @default(now())
+
+  winners Winner[]
+}
+
+model Winner {
+  id Int @id @default(autoincrement())
+
+  resultId Int
+  result   Result @relation(fields: [resultId], references: [id])
+
+  name String
+
+  position String
+
+  teamId Int
+  team   Team @relation(fields: [teamId], references: [id])
+}
+
+model Admin {
+  id Int @id @default(autoincrement())
+
+  username String @unique
+
+  passwordHash String
+
+  role String @default("editor")
+
+  createdAt DateTime @default(now())
+}
+
+model Schedule {
+  id Int @id @default(autoincrement())
+
+  title String
+
+  category String?
+
+  venue String?
+
+  eventDate String?
+
+  eventTime String?
+
+  createdAt DateTime @default(now())
+}
