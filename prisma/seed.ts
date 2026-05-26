@@ -48,6 +48,23 @@ async function main() {
 
   console.log("Teams & Categories seeded");
 
+  // -------------------- DEFAULT ADMIN --------------------
+  const defaultAdminUsername = "mushamilurp@gmail.com";
+  const defaultAdminPassword = "Admin@123";
+  const defaultPasswordHash = await bcrypt.hash(defaultAdminPassword, 10);
+
+  await prisma.admin.upsert({
+    where: { username: defaultAdminUsername },
+    update: { passwordHash: defaultPasswordHash },
+    create: {
+      username: defaultAdminUsername,
+      passwordHash: defaultPasswordHash,
+      role: "admin",
+    },
+  });
+
+  console.log("Default admin ensured:", defaultAdminUsername);
+
   /* -------------------- COMPETITIONS -------------------- */
 
   const data = {
@@ -221,35 +238,25 @@ async function main() {
     if (!category) continue;
 
     for (const compName of data[categoryName as keyof typeof data]) {
-      await prisma.competition.upsert({
+      const existingCompetition = await prisma.competition.findFirst({
         where: {
-          id: 0, // dummy fallback
-        },
-        update: {},
-        create: {
           name: compName,
           categoryId: category.id,
         },
       });
+
+      if (!existingCompetition) {
+        await prisma.competition.create({
+          data: {
+            name: compName,
+            categoryId: category.id,
+          },
+        });
+      }
     }
   }
 
   console.log("Competitions seeded");
-  const hashedPassword = await bcrypt.hash("admin123", 10);
-
-await prisma.admin.upsert({
-  where: {
-    username: "admin",
-  },
-  update: {},
-  create: {
-    username: "admin",
-    passwordHash: hashedPassword,
-    role: "superadmin",
-  },
-});
-
-console.log("Default admin created");
   console.log("DONE ✅");
 }
 
